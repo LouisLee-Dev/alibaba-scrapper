@@ -1,5 +1,4 @@
 import { Page } from "puppeteer";
-import delay from "./utils";
 
 interface IProductData {
   id?: string;
@@ -80,12 +79,9 @@ const getData = async (page: Page) => {
 
       return { option1, option2, option3 };
     });
-
-    await delay(1000);
-    await sku_module_element?.waitForSelector('.strong', { visible: true });
-    const vendor_element = await sku_module_element?.$('.strong');
-    const vendor = await vendor_element?.evaluate((el: Element) => el.textContent?.trim() || "");
-
+    
+    const vendorSelectors = ['.strong', '.logistic-item']
+    const vendor = await getVendor(page, vendorSelectors);
     return { priceData, options, vendor };
   };
 
@@ -131,8 +127,28 @@ const getData = async (page: Page) => {
       option3: productResult.options?.option3,
     },
   };
-  
+
   return ProductData;
 };
+
+const getVendor = async (page: Page, selectors: string[]) => {
+  for (const selector of selectors) {
+    try {
+      await page.waitForSelector(selector, { visible: true, timeout: 1000 });
+      const vendorElement = await page.$(selector);
+      if (vendorElement) {
+        const vendorText = await vendorElement.evaluate((el: Element) => el.textContent?.trim() || "");
+        if (vendorText) {
+          return vendorText;
+          
+        }
+      }
+    } catch (error) {
+      console.error(`Error finding vendor element with selector ${selector}: ${error}`);
+    }
+  }
+  return null;
+};
+
 
 export { getData };
