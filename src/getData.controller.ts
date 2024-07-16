@@ -8,7 +8,7 @@ interface IProductData {
   vendor?: string;
   price?: { quality: string; price: string }[];
   options?: {
-    option2?: string | null;
+    option2?: any | null;
     option3?: { type: string; price: string }[];
   };
   product?: {
@@ -59,16 +59,18 @@ const getData = async (page: Page) => {
     });
 
     const options = await sku_module_element?.evaluate((el: Element) => {
-      const option1_elements = el.querySelectorAll('div.sku-info > div:nth-child(2) > a.image');                                                    
+      const option1_elements = el.querySelectorAll('div.sku-info > div:nth-child(2) > a.image');
       const option1 = Array.from(option1_elements).map((option: any) => {
         option.click();
-        const name = el.querySelector('div.sku-layout.logistics > div.sku-info > h4:nth-child(1) > span')?.innerHTML || "";
+        const name = el.querySelector('div.sku-info > h4:nth-child(1) > span')?.innerHTML || "";
         const img = option.querySelector('img')?.getAttribute('src') || "";
         return { name, img };
       });
 
-      const option2Element = el.querySelector('div.sku-layout.logistics > div.sku-info > div:nth-child(4) > a > span');
-      const option2 = option2Element ? option2Element.innerHTML : null;
+      const option2Element = el.querySelectorAll('div.sku-info > div:nth-child(4) > a');
+      const option2 = option2Element ? Array.from(option2Element).map((option: any) => {
+        return option.querySelector('span').textContent?.trim() || null
+      }) : null;
 
       const option3_elements = el.querySelectorAll('.last-sku-item');
       const option3 = Array.from(option3_elements).map((option: Element) => {
@@ -79,7 +81,7 @@ const getData = async (page: Page) => {
 
       return { option1, option2, option3 };
     });
-    
+
     const vendorSelectors = ['.strong', '.logistic-item']
     const vendor = await getVendor(page, vendorSelectors);
     return { priceData, options, vendor };
@@ -140,7 +142,7 @@ const getVendor = async (page: Page, selectors: string[]) => {
         const vendorText = await vendorElement.evaluate((el: Element) => el.textContent?.trim() || "");
         if (vendorText) {
           return vendorText;
-          
+
         }
       }
     } catch (error) {
