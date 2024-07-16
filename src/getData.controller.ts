@@ -115,17 +115,6 @@ const getData = async (page: Page) => {
 
   const productResult = await product();
 
-  const getImageMetadata = async (imageUrl: string) => {
-    const response = await fetch(imageUrl);
-    const lastModified = response.headers.get("last-modified");
-    const createDate = response.headers.get("Date");
-
-    return {
-      create_at: createDate || "",
-      lastupdate_at: lastModified || "",
-    };
-  };
-
   const ProductData: IProductData = {
     title: header.title,
     vendor: productResult.vendor || undefined,
