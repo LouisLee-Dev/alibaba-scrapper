@@ -6,17 +6,15 @@ interface IProductData {
   body_html?: string;
   images?: string[];
   vendor?: string;
-  price?: { quality: string; price: string }[];
-  options?: {
-    option2?: any | null;
-    option3?: { type: string; price: string }[];
-  };
+  price?: any;
+  options?: any;
   product?: {
     name: string;
     img: string;
     create_at: string;
     lastupdate_at: string;
   }[];
+  variants: any;
 }
 
 const getData = async (page: Page) => {
@@ -40,37 +38,39 @@ const getData = async (page: Page) => {
     const sku_module_element = await page.$('.sku-dialog-content');
 
     const priceData = await sku_module_element?.evaluate((el: Element) => {
-      interface PriceItem {
-        quality: string;
-        price: string;
-      }
-      const priceItems: PriceItem[] = [];
 
-      const elements = el.querySelectorAll('.product-price .price-list .price-item');
+      let priceItems:any;
 
-      elements.forEach((element: Element) => {
-        const qualityElement = element.querySelector('.quality')?.textContent?.trim() || "";
-        const priceElement = element.querySelector('.price span')?.textContent?.trim() || "";
+      const price_mul_elements = el.querySelectorAll('.product-price .price-list .price-item');
+      const price_simple_element = el.querySelector('.product-price .price-list .price-range span.price');
 
-        priceItems.push({ quality: qualityElement, price: priceElement });
-      });
+      price_mul_elements && price_mul_elements !== undefined && price_mul_elements !== null && price_mul_elements.item(0) !== undefined && price_mul_elements.item(0) !== null && price_mul_elements.length < 1 ?
+        price_mul_elements.forEach((element: Element) => {
+          const qualityElement = element.querySelector('.quality')?.textContent?.trim() || "";
+          const priceElement = element.querySelector('.price span')?.textContent?.trim() || "";
+
+          priceItems.push({ quality: qualityElement, price: priceElement });
+        }) :
+        priceItems = price_simple_element?.textContent?.trim() || '';
 
       return priceItems;
     });
 
-    const options = await sku_module_element?.evaluate((el: Element) => {
+    const options = await sku_module_element?.evaluate((el: Element) => {      
       const option1_elements = el.querySelectorAll('div.sku-info > div:nth-child(2) > a.image');
       const option1 = Array.from(option1_elements).map((option: any) => {
         option.click();
         const name = el.querySelector('div.sku-info > h4:nth-child(1) > span')?.innerHTML || "";
         const img = option.querySelector('img')?.getAttribute('src') || "";
-        return { name, img };
+        return {name, img};
       });
+      // const option1_name = el.querySelector('div.sku-info > h4:nth-child(1)')
 
       const option2Element = el.querySelectorAll('div.sku-info > div:nth-child(4) > a');
       const option2 = option2Element ? Array.from(option2Element).map((option: any) => {
         return option.querySelector('span').textContent?.trim() || null
       }) : null;
+      // const option2_name = el.querySelector('div.sku-info > h4:nth-child(3)')?.innerHTML || "";
 
       const option3_elements = el.querySelectorAll('.last-sku-item');
       const option3 = Array.from(option3_elements).map((option: Element) => {
@@ -78,13 +78,33 @@ const getData = async (page: Page) => {
         const price = option.querySelector('span.price')?.innerHTML || "";
         return { type, price };
       });
+      // const option3_name = el.querySelector('div.sku-info > h4:nth-child(5)')?.innerHTML || "";      
 
-      return { option1, option2, option3 };
+      return { 
+        option1: { value: option1 }, 
+        option2: { value: option2 }, 
+        option3: { value: option3 } 
+      };
     });
+
+    const variants = options?.option1.value.map((op1, op1_index) => 
+      options.option2?.value?.map((op2, op2_index) => {
+        return {
+          title: `${op1.name} / ${op2}`,
+          sku: `SKU-${(op1_index + 1) * (op2_index + 1)}`,
+          price: priceData.quality || priceData,
+          compare_at_price: priceData.quality || priceData,
+          option1: op1.name,
+          option2: op2,
+          option3: options.option3,
+          imgUrl: op1.img
+        }
+    })
+    )
 
     const vendorSelectors = ['.strong', '.logistic-item']
     const vendor = await getVendor(page, vendorSelectors);
-    return { priceData, options, vendor };
+    return { variants, priceData, options, vendor };
   };
 
   await page.waitForSelector('.image-list-item', { visible: true });
@@ -106,28 +126,13 @@ const getData = async (page: Page) => {
     };
   };
 
-  const productMetaInfo = await Promise.all((productResult.options?.option1 ?? []).map(async (option) => {
-    const metaData = await getImageMetadata(option.img);
-    return {
-      name: option.name,
-      img: option.img,
-      create_at: metaData.create_at,
-      lastupdate_at: metaData.lastupdate_at,
-    };
-  }));
-
   const ProductData: IProductData = {
-    id: header.id,
     title: header.title,
-    body_html: header.body_html,
     vendor: productResult.vendor || undefined,
-    images,
     price: productResult.priceData,
-    product: productMetaInfo,
-    options: {
-      option2: productResult.options?.option2 || null,
-      option3: productResult.options?.option3,
-    },
+    options: [productResult.options?.option1, productResult.options?.option2, productResult.options?.option3],
+    variants: productResult.variants,
+    images,
   };
 
   return ProductData;
