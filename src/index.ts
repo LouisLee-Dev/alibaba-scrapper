@@ -1,12 +1,7 @@
 import puppeteer from "puppeteer-extra";
 import { getData } from "./getData.controller";
 
-interface ProductResult {
-    // Define the structure of the product result
-    // e.g., name: string; price: string; etc.
-}
-
-const scrapAlibabaProduct = async (url: string): Promise<ProductResult | Error> => {
+const scrapAlibabaProduct = async (url: string): Promise<any | Error> => {
     try {
         console.log("Scraping data...");
 
@@ -16,10 +11,10 @@ const scrapAlibabaProduct = async (url: string): Promise<ProductResult | Error> 
 
         const page = await browser.newPage();
 
-        await page.goto(url, { waitUntil: "domcontentloaded" });
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
         // Get product data
-        const productResult: ProductResult = await getData(page);
-        
+        const productResult: any = await getData(page);
+        console.log(productResult);
         return productResult;
     } catch (error: unknown) {
         if (error instanceof Error) {
