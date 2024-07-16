@@ -59,7 +59,7 @@ const getData = async (page: Page) => {
     });
 
     const options = await sku_module_element?.evaluate((el: Element) => {
-      const option1_elements = el.querySelectorAll('div.sku-layout.logistics > div.sku-info > div:nth-child(2) > a.image');
+      const option1_elements = el.querySelectorAll('div.sku-info > div:nth-child(2) > a.image');                                                    
       const option1 = Array.from(option1_elements).map((option: any) => {
         option.click();
         const name = el.querySelector('div.sku-layout.logistics > div.sku-info > h4:nth-child(1) > span')?.innerHTML || "";
