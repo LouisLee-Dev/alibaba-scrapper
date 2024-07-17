@@ -98,8 +98,8 @@ const getData = async (page: Page) => {
         return {
           title: `${op1.name} / ${op2}`,
           sku: `SKU-${(op1_index + 1) * (op2_index + 1)}`,
-          price: priceData.quality || priceData,
-          compare_at_price: priceData.quality || priceData,
+          price: priceData.price || priceData,
+          compare_at_price: priceData.price || priceData,
           option1: op1.name,
           option2: op2,
           option3: options.option3,
