@@ -57,28 +57,29 @@ const getData = async (page: Page) => {
     });
 
     const options = await sku_module_element?.evaluate((el: Element) => {      
-      const option1_elements = el.querySelectorAll('div.sku-info > div:nth-child(2) > a.image');
+      const option1_elements = document.querySelectorAll('div.sku-info > div:nth-child(2) > a.image');
       const option1 = Array.from(option1_elements).map((option: any) => {
         option.click();
         const name = el.querySelector('div.sku-info > h4:nth-child(1) > span')?.innerHTML || "";
         const img = option.querySelector('img')?.getAttribute('src') || "";
         return {name, img};
       });
-      const option1_name = el.querySelector('div.sku-info > h4:nth-child(1)')?.textContent?.trim() || ""      
-
-      const option2Element = el.querySelectorAll('div.sku-info > div:nth-child(4) > a');
-      const option2 = option2Element ? Array.from(option2Element).map((option: any) => {
+      const option1_name = el.querySelector('div.sku-info > h4:nth-child(1)')?.textContent?.trim() || "";
+      
+      const option2_elements = document.querySelectorAll('div.sku-info > div:nth-child(4) > a');
+      
+      const option2 = Array.from(option2_elements).map((option: any) => {
         return option.querySelector('span').textContent?.trim() || null
-      }) : null;
-      const option2_name = el.querySelector('div.sku-info > h4:nth-child(3)')?.textContent?.trim() || "";      
+      });
+      const option2_name = el.querySelector('div.sku-info > h4:nth-child(3)')?.textContent?.trim() || "";
 
-      const option3_elements = el.querySelectorAll('.last-sku-item');
+      const option3_elements = document.querySelectorAll('div.sku-info > div:nth-child(6) > a');
       const option3 = Array.from(option3_elements).map((option: Element) => {
         const type = option.querySelector('span.last-sku-first-item > span > span')?.innerHTML || "";
         const price = option.querySelector('span.price')?.innerHTML || "";
         return { type, price };
       });
-      const option3_name = el.querySelector('div.sku-info > h4:nth-child(5)')?.textContent?.trim() || "";            
+      const option3_name = el.querySelector('div.sku-info > h4:nth-child(5)')?.textContent?.trim() || "";      
 
       return { 
         option1: { name: option1_name, value: option1 }, 
@@ -114,6 +115,8 @@ const getData = async (page: Page) => {
   });
 
   const productResult = await product();
+
+  console.log(productResult);
 
   const ProductData: IProductData = {
     title: header.title,
