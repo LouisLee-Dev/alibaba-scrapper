@@ -64,13 +64,13 @@ const getData = async (page: Page) => {
         const img = option.querySelector('img')?.getAttribute('src') || "";
         return {name, img};
       });
-      // const option1_name = el.querySelector('div.sku-info > h4:nth-child(1)')
+      const option1_name = el.querySelector('div.sku-info > h4:nth-child(1)')?.textContent?.trim() || ""      
 
       const option2Element = el.querySelectorAll('div.sku-info > div:nth-child(4) > a');
       const option2 = option2Element ? Array.from(option2Element).map((option: any) => {
         return option.querySelector('span').textContent?.trim() || null
       }) : null;
-      // const option2_name = el.querySelector('div.sku-info > h4:nth-child(3)')?.innerHTML || "";
+      const option2_name = el.querySelector('div.sku-info > h4:nth-child(3)')?.textContent?.trim() || "";      
 
       const option3_elements = el.querySelectorAll('.last-sku-item');
       const option3 = Array.from(option3_elements).map((option: Element) => {
@@ -78,12 +78,12 @@ const getData = async (page: Page) => {
         const price = option.querySelector('span.price')?.innerHTML || "";
         return { type, price };
       });
-      // const option3_name = el.querySelector('div.sku-info > h4:nth-child(5)')?.innerHTML || "";      
+      const option3_name = el.querySelector('div.sku-info > h4:nth-child(5)')?.textContent?.trim() || "";            
 
       return { 
-        option1: { value: option1 }, 
-        option2: { value: option2 }, 
-        option3: { value: option3 } 
+        option1: { name: option1_name, value: option1 }, 
+        option2: { name: option2_name, value: option2 }, 
+        option3: { name: option3_name, value: option3 } 
       };
     });
 
@@ -123,7 +123,7 @@ const getData = async (page: Page) => {
     variants: productResult.variants,
     images,
   };
-
+  
   return ProductData;
 };
 

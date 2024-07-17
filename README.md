@@ -1,13 +1,13 @@
-# Scraping Temu E-commerce Website
+# Scraping Alibaba E-commerce Website
 
 ## Description
 
-Backend module to scrap Temu E-commerce website using TypeScript, Node.js and Puppeteer
+Backend module to scrap Alibaba E-commerce website using TypeScript, Node.js and Puppeteer
 
 ## Installation
 
 ```
-$ npm install temu-scraper
+$ npm install alibaba-scraper
 ```
 
 ## How to use
@@ -15,10 +15,10 @@ $ npm install temu-scraper
 ```
 This module use chrome default browser to skip authentication by everytime.
 
-import {scrapTemuProduct} from "temu-scraper";
+import {scrapAlibabaProduct} from "alibaba-scraper";
 
   const scrapController = async (req: Request, res: Response) => {
-    const result = await scrapTemuProduct(req.body.url);
+    const result = await scrapAlibabaProduct(req.body.url);
     result ? 
       res.status(200).json(result) :
       res.status(500).json({"error": "Didn't get data because net error or net speed!!"});
