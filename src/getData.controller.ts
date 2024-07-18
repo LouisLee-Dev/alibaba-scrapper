@@ -8,12 +8,6 @@ interface IProductData {
   vendor?: string;
   price?: any;
   options?: any;
-  product?: {
-    name: string;
-    img: string;
-    create_at: string;
-    lastupdate_at: string;
-  }[];
   variants: any;
 }
 
