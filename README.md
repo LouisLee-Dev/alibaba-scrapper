@@ -4,8 +4,8 @@
 
 Backend module to scrap Alibaba E-commerce website using TypeScript, Node.js and Puppeteer
 
+## Installation
 
-<<<<<<< HEAD
 ```
 $ npm install alibaba-scraper
 ```
@@ -26,6 +26,4 @@ import {scrapAlibabaProduct} from "alibaba-scraper";
 
   export default scrapController;
 ```
-=======
->>>>>>> 77f16580149efb1a29579b306e18eb1a6b5cf9a0
 

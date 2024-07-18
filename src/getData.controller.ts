@@ -18,19 +18,14 @@ interface IProductData {
 }
 
 const getData = async (page: Page) => {
-  const header: Partial<IProductData> = await page.evaluate(() => {
-    const id = document.querySelector('head > meta:nth-child(6)')?.getAttribute('content') || "";
-    const title = document.querySelector('title')?.textContent || "";
-    const body_html = document.querySelector('meta[http-equiv="origin-trial"]')?.getAttribute("content") || "";
-    return {
-      id,
+  const header: Partial<IProductData> = await page.evaluate(() => {    
+    const title = document.querySelector('title')?.textContent || ""; 
+    const description = document.querySelector('div.module_title > div > h1')?.innerHTML || "";
+    return {      
       title,
-      body_html,
+      description    
     };
   });
-
-  const description_element = await page.$('#container > div.root > div.layout-body > div.layout-left > div.module_title > div > h1');
-  const description =  description_element?.evaluate((el:any) => el.textContent.trim() || "");
 
   const product = async () => {
     await page.waitForSelector('#container > div.root > div.layout-body > div.layout-right > div > div > div > div.module_sku > div > div.sku-info > div:nth-child(2) > a:nth-child(1)', { timeout: 10000 });
@@ -40,25 +35,11 @@ const getData = async (page: Page) => {
     await page.waitForSelector('.sku-dialog-content');
     const sku_module_element = await page.$('.sku-dialog-content');
 
-    const priceData = await sku_module_element?.evaluate((el: Element) => {
+    const priceData = await sku_module_element?.evaluate((el: Element) => {      
 
-      let priceItems:{quality: any, price: any}[] | any = [];
+      const price = el.querySelector('.product-price .price-list .price-item .price span')?.textContent?.trim() || "";
 
-      const price_mul_elements = el.querySelectorAll('.product-price .price-list .price-item');
-      const price_simple_element = el.querySelector('.product-price .price-list .price-range span.price');
-
-      !price_simple_element ?         
-        // console.log(price_mul_elements): console.log(price_simple_element)
-        price_mul_elements.forEach((element: Element) => {
-
-          const qualityElement = element.querySelector('.quality')?.textContent?.trim() || "";
-          const priceElement = element.querySelector('.price span')?.textContent?.trim() || "";
-
-          priceItems.push({ quality: qualityElement, price: priceElement });
-        }) :
-        priceItems = price_simple_element?.textContent?.trim() || '';
-
-      return priceItems;
+      return price;
     });
 
     const options = await sku_module_element?.evaluate((el: Element) => {
@@ -80,9 +61,8 @@ const getData = async (page: Page) => {
 
       const option3_elements = document.querySelectorAll('div.sku-info > div:nth-child(6) > a');
       const option3 = Array.from(option3_elements).map((option: Element) => {
-        const type = option.querySelector('span.last-sku-first-item > span > span')?.innerHTML || "";
-        const price = option.querySelector('span.price')?.innerHTML || "";
-        return { type, price };
+        const type = option.querySelector('span')?.textContent?.trim() || "";        
+        return type;
       });
       const option3_name = el.querySelector('div.sku-info > h4:nth-child(5)')?.textContent?.trim() || "";
 
@@ -98,8 +78,8 @@ const getData = async (page: Page) => {
         return {
           title: `${op1.name} / ${op2}`,
           sku: `SKU-${(op1_index + 1) * (op2_index + 1)}`,
-          price: priceData.price || priceData,
-          compare_at_price: priceData.price || priceData,
+          price: priceData,
+          compare_at_price: priceData,
           option1: op1.name,
           option2: op2,
           option3: options.option3,
@@ -107,6 +87,8 @@ const getData = async (page: Page) => {
         }
       })
     )
+
+    console.log(variants);
 
     const vendorSelectors = ['.strong', '.logistic-item']
     const vendor = await getVendor(page, vendorSelectors);
@@ -124,14 +106,12 @@ const getData = async (page: Page) => {
   const ProductData: IProductData = {
     title: header.title,
     vendor: productResult.vendor || undefined,
-    description: description,
+    description: header.description,
     price: productResult.priceData,
     options: [productResult.options?.option1, productResult.options?.option2, productResult.options?.option3],
     variants: productResult.variants,
     images,
-  };
-
-  console.log(ProductData)
+  };  
 
   return ProductData;
 };
